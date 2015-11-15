@@ -2,7 +2,7 @@
 """
 Created on Sat Nov 14 16:27:13 2015
 
-@author: Continuum
+@author: Definitely not Continuum
 """
 
 import sys
@@ -13,7 +13,7 @@ import time
 import logging
 
 
-def wavelength_to_rgb(val):
+def returnRGB(val):
 
     '''This converts a given wavelength of light to an 
     approximate RGB color value. The wavelength must be given

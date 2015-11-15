@@ -22,9 +22,9 @@ sample = audio[111000:111050]
 #plt.plot(np.fft.fft(sample))
 
 #1
-plt.plot(sample)
+#plt.plot(sample)
 WI.WriteToImage(sample)
-plt.show()
+#plt.show()
 
 
 
