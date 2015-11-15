@@ -43,82 +43,135 @@ def GetSlice(Audio, Start, Duration, SampleRate):
     return Return
 
 
-def FillFreqBins(Sample, length, outLength = 480):
-    
-    Peak = 0;
-    for i in range(0, length):
-        if (Sample[i] > Peak):
-            Peak = Sample[i]
-            
-    #BaseNormalized = LoadNormilizationData('Baseline.txt')
-    
+def FreqToBin(Sample, length, outLength = 480):
+
     Return = np.linspace(1, 1, outLength)        
     for i in range(0, outLength):
         Return[i] = 0
         for ii in range(int(i * (length / outLength)), int((i + 1) * (length / outLength))):
             if (Sample[ii] > Return[i]):
                 Return[i] = Sample[ii]
-        #Return[i] = Return[i] / Peak #abs((Return[i] - (BaseNormalized[i] * Peak)) / Peak);
 
     return Return
     
-    
-def PerFreqNorm(Sample):
 
-    Return = [[0 for x in range(0, len(Sample))] for x in range(0, len(Sample[0]))] 
 
-    # Find peak across rows and normalize to peak
-    for i in range(0, 480):
+def NormalizeAvg(Matrix):
+
+    Return = [[0 for x in range(0, len(Matrix[0]))] for x in range(0, len(Matrix))]
+    # Average all frequency bins
+    Baseline = np.linspace(1, 1, 480)
+    for i in range(0, len(Matrix)):
+        Average = 0
+        for ii in range(0, len(Matrix[i])):
+            Average = Average + Matrix[i][ii]
+        Baseline[i] = Baseline[i] / len(Matrix[i])
+
+    # Normalize to average frequency bins
+    for i in range(0, len(Matrix)):
+        for ii in range(0, len(Matrix[i])):
+            Return[i][ii] = Matrix[i][ii] / Baseline[i]
+
+    return Return
+
+def NormalizeFreq(Matrix):
+
+    print(len(Matrix))
+    print(len(Matrix[0]))
+
+    Return = [[0 for x in range(0, len(Matrix[0]))] for x in range(0, len(Matrix))]
+    # Average across all slices
+    for i in range(0, len(Matrix)):
         Peak = 0
-        for ii in range(0, int(AudioLengthSec / SliceDuration)):
-            if (Return[i][ii] > Peak):
-                Peak = Return [i][ii]
-        
-        for ii in range(0, int(AudioLengthSec / SliceDuration)):
-            Return [i][ii] = Return [i][ii] / Peak
-            
-            
-def PerSliceNorm(Sample):
+        for ii in range(0, len(Matrix[i])):
+            if (Peak < Matrix[i][ii]):
+                Peak = Matrix[i][ii]
 
-    Return = [[0 for x in range(0, len(Sample))] for x in range(0, len(Sample[0]))] 
+        #if (Peak != 0):
+        for ii in range(0, len(Matrix[i])):
+            Return[i][ii] = Matrix[i][ii] / Peak
 
-    # Find peak across a single column and normalize to peak
-    for Row in range(0, len(Sample)):
+    return Return
+
+def NormalizeSlice(Matrix):
+
+    Return = [[0 for x in range(0, len(Matrix[0]))] for x in range(0, len(Matrix))]
+    # Average across all frequency bins
+    for ii in range(0, len(Matrix[0])):
         Peak = 0
-        for Col in range(0, len(Sample[Row])):
-            if (Return[Col][Row] > Peak):
-                Peak = Return [Col][Row]
-        
-        for ii in range(0, len(Sample[Row])):
-            Return [Col][Row] = Return [Col][Row] / Peak
-            
-            
-def ChunkNorm(Sample):
+        for i in range(0, len(Matrix)):
+            if (Peak < Matrix[i][ii]):
+                Peak = Matrix[i][ii]
 
-    Return = [[0 for x in range(0, len(Sample))] for x in range(0, len(Sample[0]))] 
+        #if (Peak != 0):
+        for i in range(0, len(Matrix)):
+            Return[i][ii] = Matrix[i][ii] / Peak
 
-    # Find peak across a single column and normalize to peak
-    for Row in range(0, int(len(Sample[0]) / 2)):
+    return Return
+
+
+def NormalizeLog(Matrix):
+
+    Return = [[0 for x in range(0, len(Matrix[0]))] for x in range(0, len(Matrix))]
+    # Average across all frequency bins
+    for ii in range(0, len(Matrix[0])):
         Peak = 0
-        for Col in range(0, len(Sample)):
-            if (Return[Col][Row] > Peak):
-                Peak = Return [Col][Row]
-        
-        for Col in range(0, len(Sample)):
-            Return [Col][Row] = Return [Col][Row] / Peak
-            
-    # Find peak across a single row and normalize to peak
-    for Col in range(int(len(Sample) / 2) + 1, len(Sample)):            
-        Peak = 0
-        for Row in range(0, len(Sample[Col])):
-            if (Return[Col][Row] > Peak):
-                Peak = Return [Col][Row]
-        
-        for Row in range(0, len(Sample[Col])):
-            Return [Col][Row] = Return [Col][Row] / Peak
+        for i in range(0, len(Matrix)):
+            if (Peak < Matrix[i][ii]):
+                Peak = Matrix[i][ii]
 
-#Fully functional normalization by row
-def Normal2(Filename):
+        #if (Peak != 0):
+        for i in range(0, len(Matrix)):
+            Return[i][ii] = np.log10(Matrix[i][ii] / Peak)
+
+    return Return
+
+def NormalizeTest(Matrix, multiplier = 20):
+
+    Return = [[0 for x in range(0, len(Matrix[0]))] for x in range(0, len(Matrix))]
+    # Average across all frequency bins
+    for ii in range(0, len(Matrix[0])):
+        Peak = 0
+        for i in range(0, len(Matrix)):
+            if (Peak < Matrix[i][ii]):
+                Peak = Matrix[i][ii]
+
+        #if (Peak != 0):
+        for i in range(0, len(Matrix)):
+            Return[i][ii] = multiplier * np.log10(Matrix[i][ii] / Peak)
+
+        Min = 0
+        for i in range(0, len(Matrix)):
+            if (Min > Return[i][ii]):
+                Min = Return[i][ii]
+
+        for i in range(0, len(Matrix)):
+            Return[i][ii] = abs(Return[i][ii] / Min)
+
+    return Return
+
+def NormalizePeaks(Matrix):
+
+    Return = [[0 for x in range(0, len(Matrix[0]))] for x in range(0, len(Matrix))]
+    # Average across all frequency bins
+    for ii in range(0, len(Matrix[0])):
+
+        for i in range(0, len(Matrix) - 1):
+            Return[i][ii] = abs(Matrix[i][ii] - Matrix[i + 1][ii])
+
+        Peak = 0
+        for i in range(0, len(Matrix)):
+            if (Peak < Matrix[i][ii]):
+                Peak = Matrix[i][ii]
+
+        for i in range(0, len(Matrix)):
+            Return[i][ii] = Matrix[i][ii] / Peak
+
+    return Return
+
+
+
+def GetSliceMap(Filename):
     
     SampleFreq = 44100
     RawData = ReadWAV(Filename)
@@ -128,128 +181,63 @@ def Normal2(Filename):
     SliceDuration = 0.05
     
     # Calculate FFT
-    Return = [[0 for x in range(0, int(AudioLengthSec / SliceDuration))] for x in range(0, 480)] 
+    Return = [[0 for x in range(int(AudioLengthSec / SliceDuration))] for x in range(480)] 
     for i in range(0, int(AudioLengthSec / SliceDuration)):
         Slice = GetSlice(Audio, i * SliceDuration, SliceDuration, SampleFreq) 
         FFT = GetFFT(Slice, SampleFreq, SliceDuration)
-        Normalized = FillFreqBins(FFT, len(FFT), 480)
-        
-        for ii in range(0, len(Normalized)):
-            Return[ii][i] = Normalized[len(Normalized)-ii-1]
-    
-    
-    
+        BinData = FreqToBin(FFT, len(FFT))
+        for ii in range(0, len(BinData)):
+            Return[ii][i] = BinData[len(BinData) - ii - 1]
 
-    # Find peak across rows and normalize to peak
-    for i in range(0, 480):
-        Peak = 0
-        for ii in range(0, int(AudioLengthSec / SliceDuration)):
-            if (Return[i][ii] > Peak):
-                Peak = Return [i][ii]
-        
-        for ii in range(0, int(AudioLengthSec / SliceDuration)):
-            Return [i][ii] = Return [i][ii] / Peak
-    
-#    # Find peak across rows and normalize to peak
-#    for i in range(0, 480):
-#        Peak = 0
-#        for ii in range(0, int(AudioLengthSec / SliceDuration)):
-#            if (Return[i][ii] > Peak):
-#                Peak = Return [i][ii]
-#        
-#        for ii in range(0, int(AudioLengthSec / SliceDuration)):
-#            Return [i][ii] = Return [i][ii] / Peak
-        
-    
-    
-#        Normalized = Normalize(FFT, len(FFT))
-#        for ii in range(0, len(Normalized)):
-#            Return[ii][i] = Normalized[len(Normalized) - ii - 1]
-    
-#    # Average all frequency bins
-#    Baseline = np.linspace(1, 1, 480)
-#    for i in range(480):
-#        Average = 0
-#        for ii in range(len(Return)):
-#            Average = Average + Return[ii][i]
-#        Baseline[i] = Baseline[i] / len(Return)
-#
-#    # Normalize to average frequency bins
-#    for i in range(len(Return)):
-#        for ii in range(len(Return[i])):
-#            Return[i][ii] = Return[i][ii] - Baseline[i]
-    
     return Return
-        
-        
-def LoadNormilizationData(Filename):
-    
-    f = open(Filename, 'r')
-    Return = np.linspace(1, 1, 480)
-    for i in range(480):
-        Line = f.readline()
-        Return[i] = float(Line[:-1])
-        
+
+def ToFile(Mat, Filename):
+    f = open(Filename, 'w')
+    for i in range(0, len(Mat)):
+        for ii in range(0, len(Mat[i])):
+            f.write(str(Mat[i][ii]))
+            f.write(',')
+        f.write('\n')
     f.close()
-    return Return
-    
 
 
 
-def Breaked(Filename, Width, Height):
-    
-    SampleFreq = 44100
-    RawData = ReadWAV(Filename)
-    RawAudio = RawData[1]
-    Audio = RawAudio[:, 1] 
-    
-    SliceLength = len(Audio) / Width
-    FreqBinLength = (SampleFreq / 2) / Height
-    
-    print(SliceLength)    
-    
-    Return = [[0 for x in range(Width)] for x in range(Height)] 
-    for Col in range(Width):
-        Slice = GetSlice(Audio, Col * SliceLength, SliceLength, SampleFreq)
-        FFT = GetFFT(Slice, SampleFreq, SliceLength)
-        for Row in range(Height):
-            Return[Col][Row] = FFT[range(Height) - Row - 1]
-    
-    # Average all frequency bins
-    Baseline = np.linspace(1, 1, Height)
-    for Row in range(Height):
-        Average = 0
-        for Col in range(Width):
-            Average = Average + Return[Col][Row]
-        Baseline[Row] = Baseline[Row] / Width
+NotNorm = GetSliceMap('bone.wav')
 
-    # Normalize to average frequency bins
-    for Col in range(Width):
-        for Row in range(Height):
-            Return[Col][Row] = Return[Col][Row] - Baseline[Row]
-    
-    return Return
-    
+#ToFile(NotNorm, 'You try so hard, and come so far, but in the end it doesnt even matter.csv')
+#Norm1 = NormalizeFreq(NotNorm)
 
-    
+#
+print('10%')
+Norm1 = NormalizeAvg(NotNorm)
+#ToFile(Norm1, 'n1.csv')
+print('20%')
+Norm2 = NormalizeFreq(NotNorm)
+#ToFile(Norm2, 'n2.csv')
+print('30%')
+Norm3 = NormalizeSlice(NotNorm)
+ToFile(Norm3, 'n3.csv')
+print('40%')
+Norm4 = NormalizeTest(NotNorm)
+Norm3 = NormalizeFreq(Norm4);
+#ToFile(Norm4, 'n4.csv')
+print('50%')
 
-
-
-
-SliceMap = Normal2('foo3.wav')
 print('Slice Completed')
 
-#f = open('NormTests.csv', 'w')
-#for i in range(0, len(SliceMap)):
-#    for ii in range(0, len(SliceMap[i])):
-#        f.write(SliceMap[i][ii])
-#        f,write(',')
-#    f.write('\n')
-#f.close()
+#WI.WriteToImage(NotNorm)
+print('60%')
+#WI.WriteToImage(Norm1)
+print('70%')
+#WI.WriteToImage(Norm2)
+print('80%')
+WI.WriteToImage(Norm3)
+print('90%')
+WI.WriteToImage(Norm4)
+print('100%')
 
-WI.WriteToImage(SliceMap)
 print('Finished')
-        
+
 
 
 
