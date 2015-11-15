@@ -2,7 +2,7 @@
 """
 Created on Sat Nov 14 16:27:13 2015
 
-@author: Definitely not Continuum
+@author: Continuum
 """
 
 import sys
