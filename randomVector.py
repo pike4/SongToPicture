@@ -7,9 +7,11 @@ Created on Sat Nov 14 14:59:56 2015
 Creates a vector of specified length containing normalilzed length values
 """
 import random
-def randNormalArray(len):
-    ret = []
+def randNormalArray(width, height):
+    ret = [[0 for i in range(height)] for j in range(width)]
     random.seed()
-    for x in range(len):
-        ret.append((random.randrange(1000)/1000))
+    for x in range(width):
+        for y in range(height):
+            print('a')
+            ret[x][y] = (random.randrange(1000)/1000)
     return ret

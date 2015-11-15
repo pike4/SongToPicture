@@ -3,6 +3,8 @@
 Created on Sat Nov 14 13:35:00 2015
 
 @author: Continuum
+
+Main method. 
 """
 import numpy as np
 

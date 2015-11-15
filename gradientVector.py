@@ -7,8 +7,11 @@ Created on Sat Nov 14 17:02:37 2015
 Creates a vector of specified length containing gradient values for testing
 """
 
-def makeGradientVector(length):
-    ret = []
+def makeGradientVector(length, height):
+    ret = [[0 for x in range(width)] for x in range(height)]
+        
+    
     for x in range(length):
-        ret.append((x * .000003))
+        for y in range(height):
+            ret[x][y] = (x + y) * 0.0001 
     return ret

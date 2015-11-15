@@ -13,25 +13,24 @@ from uuid import uuid4
 import randomVector
 import gradientVector
 import convertToRGB
-import math
 
 def WriteToImage(vec):
     #Test vectors
-    vec = randomVector.randNormalArray(1920*1080)
+    #vec = randomVector.randNormalArray(640, 480)
     #vec = gradientVector.makeGradientVector(1440*1080)
     
-    width = int(math.sqrt(len(vec)*4/3))
-    height = int(len(vec)/width)
+    width = len(vec[0])
+    height = len(vec)
     
     #Output file
     im = Image.new("RGB",(width,height),"white" )
 
     #Write each individual pixel to file
-    for i in range(height):
-        for j in range(width):
-            pix = convertToRGB.returnRGB(vec[j+(i*width)])
+    for i in range(width):
+        for j in range(height):
+            pix = convertToRGB.returnRGB(vec[j][i])
             #print(vec[j+(i*640)])
-            im.im.putpixel((j, i),pix)
+            im.im.putpixel((i,j),pix)
 
     
     fileName = "photos\\" + str(uuid4()) + ".png"

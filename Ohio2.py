@@ -69,22 +69,18 @@ def GetSliceMap(Filename):
     Audio = RawAudio[:, 1] 
     AudioLengthSec = int(len(Audio) / SampleFreq)
     
-    Return = [[0 for x in range(AudioLengthSec)] for x in range(480)] 
-    for i in range(0, AudioLengthSec):
-        Slice = GetSlice(Audio, i, 1, SampleFreq) 
-        FFT = GetFFT(Slice, SampleFreq, 1)
+    Return = [[0 for x in range(AudioLengthSec*20)] for x in range(480)] 
+    for i in range(0, AudioLengthSec * 20):
+        Slice = GetSlice(Audio, i/20, 0.05, SampleFreq) 
+        FFT = GetFFT(Slice, SampleFreq, 0.05)
         Normalized = Normalize(FFT, len(FFT))
         for ii in range(0, len(Normalized)):
             Return[ii][i] = Normalized[len(Normalized) - ii - 1]
     
     return Return
         
-        
 
-
-
-
-SliceMap = GetSliceMap('foo.wav')
+SliceMap = GetSliceMap('foo2.wav')
 print("finished slice")
 WI.WriteToImage(SliceMap)
 
